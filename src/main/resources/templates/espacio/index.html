@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Spring</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css">
+    <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/css/user-form.css" th:href="@{/css/user-form.css}">
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+    <style>
+      html,
+      body {
+      height: 100%;
+      }
+      body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      }
+      .dropdown {
+      z-index: 999;
+      }
+      .dropdown-menu {
+      background-color: #7A6ECE;
+      }
+      .dropdown-item:hover {
+      background-color: #C6C4F4;
+      }
+    </style>
+  <body>
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span th:text="${#authentication.getPrincipal().getUsername()}"></span>
+      </button>
+      <div class="dropdown-menu border-0" aria-labelledby="dropdownMenuButton">
+        <ul class="nav nav-tabs border-0">
+          <li class="nav-item border-0 dropdown-item">
+            <a class="nav-link border-0" th:classappend=" ${listTab}" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="false">Gestor</a>
+          </li>
+          <li class="nav-item border-0 dropdown-item">
+            <a class="nav-link border-0" th:href="@{../menu/index}">Menú principal</a>
+          </li>
+          <li class="nav-item border-0 dropdown-item">
+            <a class="nav-link border-0" href="#" th:href="@{/logout}">Salir</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="tab-pane fade show border-0">
+      <div class="wrapper">
+        <h2 class="form-signin-heading">Gestor espacios</h2>
+        <div  id="myTab" role="tablist border-0">
+          <div class="tab-content" id="myTabContent">
+            <form th:action="@{/espacio/index}" method="get" class="form-control-sm form-inline">
+              <div class="card-body">
+                <p class="form-signin-heading">Para crear un espacio primero debe verificar su disponibilidad.</p>
+                <input type="number" name="idAula" th:value="${idAula}"  placeholder="Número de aula" size="20" class="form-control" required >
+                <input type="text" maxlength="1" name="turno" th:value="${turno}"  placeholder="Turno" size="20" class="form-control" required>
+                <input type="date" name="fecha" th:value="${fecha}"  placeholder="Fecha" size="20" class="form-control" required>
+                <button type="submit" class="btn btn-info"  >Buscar</button>
+              </div>
+          </div>
+          <table class="table table-bordered ">
+          <thead>
+          <tr>
+	          <th scope="col" style="background-color: white;">Fecha</th>
+	          <th scope="col" style="background-color: white;">Libre</th>
+	          <th scope="col" style="background-color: white;">Turno</th>
+	          <th scope="col" style="background-color: white;">ID aula</th>
+	          <th scope="col" style="background-color: white;">Número de aula</th>
+          </tr>
+          </thead>
+          <tbody>
+	          <tr th:each="espacio : ${lstEspacio}" th:field="${espacio}">
+	          <td th:text="${espacio.fecha}"></td>
+	          <td th:text="${espacio.libre}?'Sí':'No'"></td>
+	          <td th:text="${espacio.turno}"></td>
+	          <td th:text="${espacio.aula.id}"></td>
+	          <td th:text="${espacio.aula.numero}"></td>
+          </tr>
+          </form>
+          <div th:if="${#lists.isEmpty(lstEspacio)}">
+	          <div class="tab-pane fade show border-0" id="showEspacio">
+		          <div class="wrapper">
+			          <form action="#" th:action="@{/espacio/createEspacio}" th:object="${espacio}" method="post" >
+				          <h2 class="form-signin-heading">El espacio está disponible para su creación</h2>
+				          <div class="card-body">
+					          <input type="date" class="form-control search" th:field="*{fecha}" readonly />
+					          <input type="text" class="form-control" th:field="*{turno}" readonly/>
+					          <div>Aula</div>
+					          <select readonly th:field="*{aula}" >
+					    	  <option th:each="a:${aulas}" th:value="${(a.id)}" th:text="${'Aula numero: ' + idAula + ' Edificio: ' + a.edificio.nombre}" th:if="${a.numero} == ${idAula}">
+					          </select>
+					           <p>Si el aula indicada no existe, el espacio no se creará.</p>
+				          </div>
+				          <button class="btn btn-lg btn-primary btn-block" type="submit" >Crear</button>
+				          <button class="btn btn-lg btn-primary btn-block" type="submit" onclick='this.form.action="/espacio/createEspacioMes";'>Crear para todo el mes</button>
+				          <input type="date" name="fechaFin" placeholder="Fecha de fin" size="20" class="form-control">
+				          <button class="btn btn-lg btn-primary btn-block" type="submit" onclick='this.form.action="/espacio/createEspacioCuatrimestre";'>Crear para todo el cuatrimestre</button>
+			          </form>
+		        	</div>
+	          	</div>
+	         </div>
+	      </div>
+	   </div>
+    </div>
+  </body>
+</html>
